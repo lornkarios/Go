@@ -7,6 +7,7 @@ import (
 	//"log"
 	//"net/http"
 	//"regexp"
+	"fmt"
 )
 
 //var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
@@ -18,22 +19,25 @@ type Person struct {
 }
 type PersonFile []Person
 
-func (p *PersonFile) save() error {
+func (p *Person) save() error {
 	filename := "Persons.txt"
-	s := ""
-	for i := range *p {
-		s += (*p)[i].Login + " " + (*p)[i].Password + "|"
-	}
 
-	return ioutil.WriteFile(filename, []byte(s), 0600)
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	s := p.Login + " " + p.Password + "|"
+	s1 := string(body) + s
+
+	return ioutil.WriteFile(filename, []byte(s1), 0600)
 }
-func loadPerson() (*PersonFile, error) {
+func checkPerson(p *Person) (bool, error) {
 	filename := "Persons.txt"
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	var p PersonFile
+
 	s1 := ""
 	s2 := ""
 	for _, v := range body {
@@ -42,8 +46,10 @@ func loadPerson() (*PersonFile, error) {
 			s1 = ""
 		} else {
 			if v == '|' {
-				var p1 Person = Person{Login: s2, Password: s1}
-				p = append(p, p1)
+				if s2 == p.Login && s1 == p.Password {
+					return true, nil
+				}
+
 				s1 = ""
 				s2 = ""
 			} else {
@@ -52,7 +58,7 @@ func loadPerson() (*PersonFile, error) {
 		}
 
 	}
-	return &p, nil
+	return false, nil
 }
 
 /*
@@ -108,12 +114,10 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 */
 func main() {
 
-	persons, _ := loadPerson()
-	(*persons)[0].Login = "Anton"
-	(*persons)[0].Password = "1"
-	(*persons)[2].Login = "Roma"
-	(*persons)[2].Password = "2"
-	persons.save()
+	p := &Person{Login: "Coffee", Password: "Black"}
+	fmt.Println(checkPerson(p))
+	p.save()
+	fmt.Println(checkPerson(p))
 	//http.HandleFunc("/view/", makeHandler(viewHandler))
 	//http.HandleFunc("/edit/", makeHandler(editHandler))
 	//http.HandleFunc("/save/", makeHandler(saveHandler))
