@@ -2,16 +2,16 @@ package main
 
 import (
 	//"errors"
-	//"html/template"
+	"html/template"
 	"io/ioutil"
-	//"log"
-	//"net/http"
-	//"regexp"
-	"fmt"
+	"log"
+	"net/http"
+	"regexp"
+	//"fmt"
 )
 
-//var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
-//var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+var templates = template.Must(template.ParseFiles("v4hello.html"))
+var validPath = regexp.MustCompile("^/(v4hello)/([a-zA-Z0-9]+)$")
 
 type Person struct {
 	Login    string
@@ -31,7 +31,38 @@ func (p *Person) save() error {
 
 	return ioutil.WriteFile(filename, []byte(s1), 0600)
 }
-func checkPerson(p *Person) (bool, error) {
+
+func load(login string) (*Person, error) {
+	filename := "Persons.txt"
+
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	s1 := ""
+	s2 := ""
+	for _, v := range body {
+		if v == ' ' {
+			s2 = s1
+			s1 = ""
+		} else {
+			if v == '|' {
+				if s2 == login {
+
+					return &Person{Login: login, Password: s1}, nil
+				}
+
+				s1 = ""
+				s2 = ""
+			} else {
+				s1 += string(v)
+			}
+		}
+
+	}
+	return nil, nil
+}
+func checkPerson(login string) (bool, error) {
 	filename := "Persons.txt"
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -46,7 +77,7 @@ func checkPerson(p *Person) (bool, error) {
 			s1 = ""
 		} else {
 			if v == '|' {
-				if s2 == p.Login && s1 == p.Password {
+				if s2 == login {
 					return true, nil
 				}
 
@@ -61,24 +92,29 @@ func checkPerson(p *Person) (bool, error) {
 	return false, nil
 }
 
-/*
-func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Person) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
-
-	p, err := loadPage(title)
-	if err != nil {
-		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
+func viewHandler(w http.ResponseWriter, r *http.Request, login string) {
+	b, _ := checkPerson(login)
+	if login != "" && b {
+		p, _ := load(login)
+		renderTemplate(w, "v4hello", p)
 		return
 	}
-	renderTemplate(w, "view", p)
+	if login != "" || login == "|" {
+		http.Redirect(w, r, "/v4hello/", http.StatusFound)
+		return
+	}
+	p := Person{Login: "", Password: ""}
+	renderTemplate(w, "v4hello", &p)
 
 }
 
+/*
 func editHandler(w http.ResponseWriter, r *http.Request, title string) {
 
 	p, err := loadPage(title)
@@ -100,28 +136,28 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
-
+*/
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
 		if m == nil {
-			http.NotFound(w, r)
+			if (r.URL.Path)[len("/v4hello/"):] != "" {
+				fn(w, r, "|")
+				return
+			}
+			fn(w, r, "")
 			return
 		}
 		fn(w, r, m[2])
 	}
 }
-*/
+
 func main() {
 
-	p := &Person{Login: "Coffee", Password: "Black"}
-	fmt.Println(checkPerson(p))
-	p.save()
-	fmt.Println(checkPerson(p))
-	//http.HandleFunc("/view/", makeHandler(viewHandler))
+	http.HandleFunc("/v4hello/", makeHandler(viewHandler))
 	//http.HandleFunc("/edit/", makeHandler(editHandler))
 	//http.HandleFunc("/save/", makeHandler(saveHandler))
 
-	//log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
