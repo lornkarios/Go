@@ -1,7 +1,7 @@
 package db
 
 import (
-	"database/sql"
+	//"database/sql"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
