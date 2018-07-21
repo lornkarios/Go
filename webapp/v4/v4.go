@@ -10,12 +10,13 @@ import (
 	"regexp"
 )
 
-var templates = template.Must(template.ParseFiles("v4hello.html"))
-var validPath = regexp.MustCompile("^/(v4hello|v4brain)/([a-zA-Z0-9]+)$")
+var templates = template.Must(template.ParseFiles("v4hello.html", "v4brain.html", "v4page.html"))
+var validPath = regexp.MustCompile("^/(v4hello|v4brain|v4page)/([a-zA-Z0-9]+)$")
 
 type Person struct {
 	Login    string
 	Password string
+	Info     string
 }
 type PersonFile []Person
 
@@ -26,7 +27,7 @@ func (p *Person) save() error {
 	if err != nil {
 		return err
 	}
-	s := p.Login + " " + p.Password + "|"
+	s := p.Login + ":" + p.Password + "|"
 	s1 := string(body) + s
 
 	return ioutil.WriteFile(filename, []byte(s1), 0600)
@@ -42,7 +43,7 @@ func load(login string) (*Person, error) {
 	s1 := ""
 	s2 := ""
 	for _, v := range body {
-		if v == ' ' {
+		if v == ':' {
 			s2 = s1
 			s1 = ""
 		} else {
@@ -62,6 +63,38 @@ func load(login string) (*Person, error) {
 	}
 	return nil, nil
 }
+
+func loadInfo(login string) (string, error) {
+	filename := "pinfo.txt"
+
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	s1 := ""
+	s2 := ""
+	for _, v := range body {
+		if v == '|' {
+			s2 = s1
+			s1 = ""
+		} else {
+			if v == '/' {
+				if s2 == login {
+
+					return s1, nil
+				}
+
+				s1 = ""
+				s2 = ""
+			} else {
+				s1 += string(v)
+			}
+		}
+
+	}
+	return "", nil
+}
+
 func checkLogin(login string) (bool, error) {
 	filename := "Persons.txt"
 	body, err := ioutil.ReadFile(filename)
@@ -72,7 +105,7 @@ func checkLogin(login string) (bool, error) {
 	s1 := ""
 	s2 := ""
 	for _, v := range body {
-		if v == ' ' {
+		if v == ':' {
 			s2 = s1
 			s1 = ""
 		} else {
@@ -102,7 +135,7 @@ func checkPerson(p *Person) (bool, error) {
 	s1 := ""
 	s2 := ""
 	for _, v := range body {
-		if v == ' ' {
+		if v == ':' {
 			s2 = s1
 			s1 = ""
 		} else {
@@ -143,26 +176,30 @@ func viewHandler(w http.ResponseWriter, r *http.Request, login string) {
 	//if b1 && login[1] == '|'{
 
 	//}
-	p := Person{Login: "", Password: ""}
+	p := Person{Login: "", Password: "", Info: ""}
 	renderTemplate(w, "v4hello", &p)
 
 }
 
-/*
-func editHandler(w http.ResponseWriter, r *http.Request, title string) {
+func pageHandler(w http.ResponseWriter, r *http.Request, login string) {
+	b, _ := checkLogin(login)
 
-	p, err := loadPage(title)
-	if err != nil {
-		p = &Page{Title: title}
+	if login != "" && b {
+		p, _ := load(login)
+		p.Info, _ = loadInfo(login)
+		renderTemplate(w, "v4page", p)
+		return
 	}
-	renderTemplate(w, "edit", p)
+
+	http.Redirect(w, r, "/v4hello/", http.StatusFound)
+
 }
-*/
+
 func brainHandler(w http.ResponseWriter, r *http.Request, login string) {
 
-	Login := r.FormValue("login")
+	Login1 := r.FormValue("login")
 	Password := r.FormValue("password")
-	p := &Person{Login: Login, Password: Password}
+	p := &Person{Login: Login1, Password: Password, Info: ""}
 	b, _ := checkPerson(p)
 	if !b {
 
@@ -172,17 +209,21 @@ func brainHandler(w http.ResponseWriter, r *http.Request, login string) {
 			return
 		}
 		//Login = "|"+ Login
-		http.Redirect(w, r, "/v4hello/"+Login, http.StatusFound)
+
+		renderTemplate(w, "v4brain", p)
 
 		return
 	}
+
+	http.Redirect(w, r, "/v4page/"+Login1, http.StatusFound)
 }
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
 		if m == nil {
-			if (r.URL.Path)[len("/v4hello/"):] != "" {
+			if (r.URL.Path)[len("/v4hello/"):] != "" && (r.URL.Path)[:len("/v4hello/")] == "/v4hello/" {
 				fn(w, r, "|")
 				return
 			}
@@ -197,7 +238,7 @@ func main() {
 
 	http.HandleFunc("/v4hello/", makeHandler(viewHandler))
 	http.HandleFunc("/v4brain/", makeHandler(brainHandler))
-
+	http.HandleFunc("/v4page/", makeHandler(brainHandler))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
