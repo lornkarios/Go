@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -21,8 +22,8 @@ func Start(cfg Config, m *model.Model, listener net.Listener) {
 		MaxHeaderBytes: 1 << 16}
 
 	http.Handle("/", indexHandler(m))
-	http.Handle("/js/", http.FileServer(cfg.Assets))
 	http.Handle("/people", peopleHandler(m))
+	http.Handle("/js/", http.FileServer(cfg.Assets))
 
 	go server.Serve(listener)
 }
