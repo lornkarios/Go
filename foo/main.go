@@ -1,7 +1,10 @@
 package main
 
 import (
+	"flag"
 	"github.com/lornkarios/Go/foo/daemon"
+	"log"
+	"net/http"
 )
 
 var assetsPath string
