@@ -1,7 +1,7 @@
 package db
 
 import (
-	//"database/sql"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -34,6 +34,8 @@ type pgDb struct {
 	dbConn *sqlx.DB
 
 	sqlSelectPeople *sqlx.Stmt
+	sqlInsertPerson *sqlx.NamedStmt
+	sqlSelectPerson *sql.Stmt
 }
 
 func (p *pgDb) createTablesIfNotExist() error {

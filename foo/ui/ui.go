@@ -22,6 +22,7 @@ func Start(cfg Config, m *model.Model, listener net.Listener) {
 
 	http.Handle("/", indexHandler(m))
 	http.Handle("/js/", http.FileServer(cfg.Assets))
+	http.Handle("/people", peopleHandler(m))
 
 	go server.Serve(listener)
 }
@@ -54,5 +55,23 @@ const indexHTML = `
 func indexHandler(m *model.Model) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, indexHTML)
+	})
+}
+
+func peopleHandler(m *model.Model) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		people, err := m.People()
+		if err != nil {
+			http.Error(w, "This is an error", http.StatusBadRequest)
+			return
+		}
+
+		js, err := json.Marshal(people)
+		if err != nil {
+			http.Error(w, "This is an error", http.StatusBadRequest)
+			return
+		}
+
+		fmt.Fprintf(w, string(js))
 	})
 }
