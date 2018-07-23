@@ -20,7 +20,7 @@ type Book struct {
 }
 
 func Load(md string) (Book, int, error) {
-	os.Stat(md)
+	info, err := os.Stat(md)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// файл не существует
