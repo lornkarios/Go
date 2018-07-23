@@ -41,8 +41,9 @@ func Load(md string, pNum int64) (Book, int, error) {
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
-	body = strings.Join(strings.Split(body, "\n")[pNum:pNum+200], "\n")
-
+	//body = strings.Join(strings.Split(body, "\n")[pNum:pNum+200], "\n")
+	body = body[pNum*2000 : (pNum+1)*2000]
+	body = body[:strings.LastIndex(body, "</p>")+4]
 	image := tagR(file, "binary")
 	code := encode(file)
 	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code}
