@@ -20,6 +20,7 @@ type Book struct {
 	Annotation template.HTML
 	Body       template.HTML
 	Image      string
+	Code       string
 }
 
 func Load(md string) (Book, int, error) {
@@ -41,7 +42,8 @@ func Load(md string) (Book, int, error) {
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
 	image := tagR(file, "binary")
-	book := Book{title, author, template.HTML(annotation), template.HTML(body), image}
+	code := encode(file)
+	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code}
 	return book, 200, nil
 
 }
@@ -62,4 +64,13 @@ func tagR(file string, tag string) string {
 	}
 
 	return (file[ind1:ind2])
+}
+func encode(file string) string {
+	ind1 := strings.Index(file, "encoding=")
+	ind2 := strings.Index(file, "?>")
+	if ind1 == -1 || ind2 == -1 {
+		return "utf-8"
+	}
+
+	return (file[ind1+10 : ind2])
 }

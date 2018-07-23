@@ -7,9 +7,8 @@
 <div class="col-md-8 col-md-offset-2">
 <h1>{{.Title}}</h1>
 <a href="#" class="thumbnail">
-      <binary id="{{.Title}}.jpg" content-type="image/jpeg">
-      	{{.Image}}
-      </binary>>
+	<img src="data:image/gif;base64,{{.Image}}" />
+   
 </a>
 <span class="label label-info">Автор {{.Author.Firstname}} {{.Author.Lastname}}</span>
 <div class="panel panel-default">
@@ -17,7 +16,7 @@
     {{.Annotation}}
   </div>
 </div>
-<button type="button" class="btn btn-default">Left</button>
+<a href ="/reading/{{.Title}}">Читать</a>
 </div>
 </div>
 </div>
