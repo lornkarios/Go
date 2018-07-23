@@ -39,7 +39,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	post, status, err := parser.Load(post_md)
+	post, status, err := parser.Load(post_md, 0)
 	if err != nil {
 		errorHandler(w, r, status)
 		return
@@ -67,7 +67,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		// получим posts/p1.md
 		post_md = p + ".fb2"
 		if bpage != "" {
-			pbook = strconv.ParseInt(bpage, 10, 32)
+			pbook, _ = strconv.ParseInt(bpage, 10, 32)
 		} else {
 			pbook = 0
 		}
