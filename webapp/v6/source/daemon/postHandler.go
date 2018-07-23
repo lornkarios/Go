@@ -1,5 +1,13 @@
 package daemon
 
+import (
+	"github.com/lornkarios/Go/webapp/v6/source/parser"
+	"html/template"
+	"log"
+	"net/http"
+	"path"
+)
+
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	// Извлекаем параметр

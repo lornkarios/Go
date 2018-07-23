@@ -4,7 +4,6 @@ import (
 	//"fmt"
 	"github.com/bmizerany/pat"
 	"github.com/lornkarios/Go/webapp/v6/source/daemon"
-	"github.com/lornkarios/Go/webapp/v6/source/parser"
 
 	"html/template"
 	//"io/ioutil"
