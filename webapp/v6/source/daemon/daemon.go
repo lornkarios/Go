@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"strconv"
 )
 
 var (
@@ -55,14 +56,21 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	// Например, в http://127.0.0.1:3000/p1 page = "p1"
 	// в http://127.0.0.1:3000/ page = ""
 	page := params.Get(":page")
+	bpage := params.Get(":bPage")
 	// Путь к файлу (без расширения)
 	// Например, posts/p1
 	p := path.Join("books", page)
 	var post_md string
+	var pbook int
 	if page != "" {
 		// если page не пусто, то считаем, что запрашивается файл
 		// получим posts/p1.md
 		post_md = p + ".fb2"
+		if bpage != "" {
+			pbook = strconv.ParseInt(bpage, 10, 32)
+		} else {
+			pbook = 0
+		}
 	} else {
 		// если page пусто, то выдаем главную
 		if err := first_template.ExecuteTemplate(w, "layout", nil); err != nil {
@@ -71,7 +79,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	post, status, err := parser.Load(post_md)
+	post, status, err := parser.Load(post_md, pbook)
 	if err != nil {
 		errorHandler(w, r, status)
 		return

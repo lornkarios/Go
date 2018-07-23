@@ -5,12 +5,10 @@ import (
 	"github.com/bmizerany/pat"
 	"github.com/lornkarios/Go/webapp/v6/source/daemon"
 
-	"html/template"
 	//"io/ioutil"
 	"log"
 	"net/http"
 	//"os"
-	"path"
 	//"strings"
 )
 
@@ -21,8 +19,11 @@ func main() {
 	mux := pat.New()
 	mux.Get("/books/:page", http.HandlerFunc(daemon.PostHandler))
 	mux.Get("/books/:page/", http.HandlerFunc(daemon.PostHandler))
-	mux.Get("/reading/:page", http.HandlerFunc(daemon.ReadHandler))
+	mux.Get("/reading/:page/:bPage", http.HandlerFunc(daemon.ReadHandler))
 	mux.Get("/reading/:page/", http.HandlerFunc(daemon.ReadHandler))
+	mux.Get("/reading/:page", http.HandlerFunc(daemon.ReadHandler))
+	mux.Get("/reading/", http.HandlerFunc(daemon.ReadHandler))
+	mux.Get("/reading/:page/:bPage/", http.HandlerFunc(daemon.ReadHandler))
 	mux.Get("/", http.HandlerFunc(daemon.PostHandler))
 	http.Handle("/", mux)
 	log.Println("Listening...")

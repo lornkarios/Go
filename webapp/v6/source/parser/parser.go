@@ -23,7 +23,7 @@ type Book struct {
 	Code       string
 }
 
-func Load(md string) (Book, int, error) {
+func Load(md string, int pNum) (Book, int, error) {
 	info, err := os.Stat(md)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -41,6 +41,8 @@ func Load(md string) (Book, int, error) {
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
+	body = strings.Join(strings.Split(body, "\n")[pNum:pNum+200], "\n")
+
 	image := tagR(file, "binary")
 	code := encode(file)
 	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code}
