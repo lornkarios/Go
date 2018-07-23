@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
