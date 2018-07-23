@@ -45,10 +45,19 @@ func Load(md string) (Book, int, error) {
 }
 
 func tagR(file string, tag string) string {
-	ind1 := strings.Index(file, "<"+tag+">")
+	ind1 := strings.Index(file, "<"+tag)
 	ind2 := strings.Index(file, "</"+tag+">")
 	if ind1 == -1 || ind2 == -1 {
 		return "-1"
 	}
-	return (file[ind1+len("<"+tag+">") : ind2])
+	file1 := []byte(file[ind1:])
+
+	for i, v := range file1 {
+		if v == '>' {
+			ind1 += i + 1
+			break
+		}
+	}
+
+	return (file[ind1:ind2])
 }
