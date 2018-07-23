@@ -23,7 +23,7 @@ type Book struct {
 	Code       string
 }
 
-func Load(md string, pNum int) (Book, int, error) {
+func Load(md string, pNum int) (Book, int64, error) {
 	info, err := os.Stat(md)
 	if err != nil {
 		if os.IsNotExist(err) {
