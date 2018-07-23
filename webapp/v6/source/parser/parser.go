@@ -31,26 +31,17 @@ func Load(md string) (Book, int, error) {
 	}
 	if info.IsDir() {
 		// не файл, а папка
-		info, err := os.Stat(md)
-		if err != nil {
-			if os.IsNotExist(err) {
-				// файл не существует
-				return Book{}, http.StatusNotFound, err
-			}
-		}
-		if info.IsDir() {
-			// не файл, а папка
-			return Book{}, http.StatusNotFound, fmt.Errorf("dir")
-		}
-		fileread, _ := ioutil.ReadFile(md)
-		file := string(fileread)
-		title := tagR(file, "book-title")
-		author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
-		annotation := tagR(file, "annotation")
-		body := tagR(file, "body")
-		book := Book{title, author, annotation, template.HTML(body)}
-		return book, 200, nil
+		return Book{}, http.StatusNotFound, fmt.Errorf("dir")
 	}
+	fileread, _ := ioutil.ReadFile(md)
+	file := string(fileread)
+	title := tagR(file, "book-title")
+	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
+	annotation := tagR(file, "annotation")
+	body := tagR(file, "body")
+	book := Book{title, author, annotation, template.HTML(body)}
+	return book, 200, nil
+
 }
 
 func tagR(file string, tag string) string {
