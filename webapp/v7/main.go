@@ -14,7 +14,13 @@ import (
 	"strings"
 )
 
+type pef struct {
+	URL string
+}
+type abos interface{}
+
 var (
+	mainBook = &Book{Title: ""}
 	// компилируем шаблоны, если не удалось, то выходим
 	first_template = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "main.html")))
 	post_template  = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "book.html")))
@@ -29,11 +35,13 @@ func main() {
 	mux := pat.New()
 	mux.Get("/books/:page", http.HandlerFunc(PostHandler))
 	mux.Get("/books/:page/", http.HandlerFunc(PostHandler))
+
 	mux.Get("/reading/:page/:bPage", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/:page/", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/:page", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/:page/:bPage/", http.HandlerFunc(ReadHandler))
+
 	mux.Get("/", http.HandlerFunc(PostHandler))
 	http.Handle("/", mux)
 	log.Println("Listening...")
@@ -62,12 +70,20 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	post, status, err := Load(post_md, 0)
-	if err != nil {
-		errorHandler(w, r, status)
-		return
+	var post *Book
+	var err error
+	var status int
+	post = mainBook
+	if mainBook.Title == "" || mainBook.Title != page {
+		*post, status, err = Load(post_md, 0)
+		if err != nil {
+			errorHandler(w, r, status)
+			return
+		}
+		mainBook = post
 	}
-	if err := post_template.ExecuteTemplate(w, "layout", post); err != nil {
+
+	if err := post_template.ExecuteTemplate(w, "layout", *post); err != nil {
 		log.Println(err.Error())
 		errorHandler(w, r, 500)
 	}
@@ -78,23 +94,39 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	// Извлекаем параметр
 	// Например, в http://127.0.0.1:3000/p1 page = "p1"
 	// в http://127.0.0.1:3000/ page = ""
-	page := params.Get(":page")
+
 	bpage := params.Get(":bPage")
+	page := params.Get(":page")
+
 	// Путь к файлу (без расширения)
 	// Например, posts/p1
+
 	p := path.Join("books", page)
 	var post_md string
 	var pbook int64
 	if page != "" {
 		// если page не пусто, то считаем, что запрашивается файл
 		// получим posts/p1.md
+		if strings.Index(r.URL.Path, "sl") != -1 {
+			pbook, _ = strconv.ParseInt(r.URL.Path[strings.Index(r.URL.Path, page)+len(page)+1:strings.Index(r.URL.Path, "sl")-1], 10, 32)
+			http.Redirect(w, r, "/reading/"+page+"/"+strconv.Itoa(int(pbook+1)), http.StatusMovedPermanently)
+			return
+		}
+		if strings.Index(r.URL.Path, "pr") != -1 {
+			pbook, _ = strconv.ParseInt(r.URL.Path[strings.Index(r.URL.Path, page)+len(page)+1:strings.Index(r.URL.Path, "pr")-1], 10, 32)
+			http.Redirect(w, r, "/reading/"+page+"/"+strconv.Itoa(int(pbook-1)), http.StatusMovedPermanently)
+			return
+		}
+
 		post_md = p + ".fb2"
 		if bpage != "" {
 
 			pbook, _ = strconv.ParseInt(bpage, 10, 32)
 			if pbook < 0 {
-				pbook = 0
+				http.Redirect(w, r, "/reading/"+page, http.StatusMovedPermanently)
+				return
 			}
+
 		} else {
 			pbook = 0
 		}
@@ -106,12 +138,25 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	post, status, err := Load(post_md, pbook)
-	if err != nil {
-		errorHandler(w, r, status)
-		return
+	var post *Book
+	var err error
+	var status int
+
+	mainBook.Bpage = pbook
+
+	post = mainBook
+
+	if mainBook.Title == "" || mainBook.Title != page {
+		*post, status, err = Load(post_md, pbook)
+
+		if err != nil {
+			errorHandler(w, r, status)
+			return
+		}
+		mainBook = post
 	}
-	if err := read_template.ExecuteTemplate(w, "layout", post); err != nil {
+	post.Body = template.HTML(post.Body1[post.Bpage*4000 : (post.Bpage+1)*4000])
+	if err := read_template.ExecuteTemplate(w, "layout", *post); err != nil {
 		log.Println(err.Error())
 		errorHandler(w, r, 500)
 	}
@@ -139,6 +184,7 @@ type Book struct {
 	Image      string
 	Code       string
 	Bpage      int64
+	Body1      string
 }
 
 func Load(md string, pNum int64) (Book, int, error) {
@@ -159,12 +205,10 @@ func Load(md string, pNum int64) (Book, int, error) {
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
-	//body = strings.Join(strings.Split(body, "\n")[pNum:pNum+200], "\n")
-	body = body[pNum*4000 : (pNum+1)*4000]
-	//body = body[:strings.LastIndex(body, "</p>")+4]
+	//body = body[pNum*4000 : (pNum+1)*4000]
 	image := tagR(file, "binary")
 	code := encode(file)
-	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code, pNum}
+	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code, pNum, body}
 	return book, 200, nil
 
 }
