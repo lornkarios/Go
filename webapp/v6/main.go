@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/bmizerany/pat"
-	"github.com/lornkarios/webapp/v6/parser"
+	"github.com/lornkarios/webapp/v6/source/parser"
 	"github.com/russross/blackfriday"
 	"html/template"
 	"io/ioutil"
