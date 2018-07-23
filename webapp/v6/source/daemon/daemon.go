@@ -67,7 +67,11 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		// получим posts/p1.md
 		post_md = p + ".fb2"
 		if bpage != "" {
+
 			pbook, _ = strconv.ParseInt(bpage, 10, 32)
+			if pbook < 0 {
+				pbook = 0
+			}
 		} else {
 			pbook = 0
 		}

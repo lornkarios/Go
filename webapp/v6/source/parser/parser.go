@@ -21,6 +21,7 @@ type Book struct {
 	Body       template.HTML
 	Image      string
 	Code       string
+	Bpage      int64
 }
 
 func Load(md string, pNum int64) (Book, int, error) {
@@ -42,11 +43,11 @@ func Load(md string, pNum int64) (Book, int, error) {
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
 	//body = strings.Join(strings.Split(body, "\n")[pNum:pNum+200], "\n")
-	body = body[pNum*2000 : (pNum+1)*2000]
+	body = body[pNum*4000 : (pNum+1)*4000]
 	//body = body[:strings.LastIndex(body, "</p>")+4]
 	image := tagR(file, "binary")
 	code := encode(file)
-	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code}
+	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code, pNum}
 	return book, 200, nil
 
 }

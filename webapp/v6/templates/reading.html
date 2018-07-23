@@ -14,8 +14,8 @@
 </div>
 <nav aria-label="...">
   <ul class="pager">
-    <li><a href="#">Предыдущая</a></li>
-    <li><a href="#">Следующая</a></li>
+    <li><a href="/reading/{{.Title}}/{{.Bpage - 1}}">Предыдущая</a></li>
+    <li><a href="/reading/{{.Title}}/{{.Bpage + 1}}">Следующая</a></li>
   </ul>
 </nav>
 {{end}}
