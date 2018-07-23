@@ -1,6 +1,6 @@
 package daemon
 
-func postHandler(w http.ResponseWriter, r *http.Request) {
+func PostHandler(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	// Извлекаем параметр
 	// Например, в http://127.0.0.1:3000/p1 page = "p1"
