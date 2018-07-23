@@ -17,7 +17,7 @@ type Person struct {
 type Book struct {
 	Title      string
 	Author     Person
-	Annotation string
+	Annotation template.HTML
 	Body       template.HTML
 }
 
@@ -39,7 +39,7 @@ func Load(md string) (Book, int, error) {
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
-	book := Book{title, author, annotation, template.HTML(body)}
+	book := Book{title, author, template.HTML(annotation), template.HTML(body)}
 	return book, 200, nil
 
 }

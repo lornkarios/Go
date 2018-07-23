@@ -1,17 +1,17 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/bmizerany/pat"
 	"github.com/lornkarios/Go/webapp/v6/source/parser"
-	"github.com/russross/blackfriday"
+
 	"html/template"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	//"os"
 	"path"
-	"strings"
+	//"strings"
 )
 
 var (
@@ -55,6 +55,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err.Error())
 			errorHandler(w, r, 500)
 		}
+		return
 	}
 	post, status, err := parser.Load(post_md)
 	if err != nil {
