@@ -1,15 +1,15 @@
 package parser
-import{
-	
-	"os"
-	"io/ioutil"
-	"strings"
+
+import (
 	"html/template"
-}
+	"io/ioutil"
+	"os"
+	"strings"
+)
 
 type Person struct {
 	Firstname string
-	Lastname string
+	Lastname  string
 }
 
 type Book struct {
@@ -43,19 +43,19 @@ func Load(md string) (Book, int, error) {
 		fileread, _ := ioutil.ReadFile(md)
 		file := string(fileread)
 		title := tagR(file, "book-title")
-		author := Person{Firstname:tagR(tagR(file, "author"),"first-name"),Lastname:tagR(tagR(file, "author"),"last-name")}
-		annotation:= tagR(file, "annotation")
-		body :=tagR(file, "body")
-		book := Book{title,author,annotation, template.HTML(body)}
+		author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
+		annotation := tagR(file, "annotation")
+		body := tagR(file, "body")
+		book := Book{title, author, annotation, template.HTML(body)}
 		return book, 200, nil
 	}
 }
 
-func tagR(file string ,tag string)(string){
-	ind1:=strings.Index(file, "<"+tag+">")
-	ind2:=strings.Index(file, "</"+tag+">")
-	if ind1 == -1 ||ind2 == -1{
+func tagR(file string, tag string) string {
+	ind1 := strings.Index(file, "<"+tag+">")
+	ind2 := strings.Index(file, "</"+tag+">")
+	if ind1 == -1 || ind2 == -1 {
 		return "-1"
 	}
-	return (file[ind1+len("<"+tag+">"):ind2])
+	return (file[ind1+len("<"+tag+">") : ind2])
 }
