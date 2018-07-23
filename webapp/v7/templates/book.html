@@ -1,0 +1,31 @@
+{{define "head"}}
+   <link href="/static/highlight/styles/ir_black.css" rel="stylesheet" media="screen">
+{{end}}
+{{define "title"}}{{.Title}} {{end}}{{define "body"}}
+<div class="container" id="container">
+	<meta charset="{{.Code}}">
+<div class="row" style="text-align:left;">
+<div class="col-md-8 col-md-offset-2">
+<h1>{{.Title}}</h1>
+<a href="#" class="thumbnail">
+	<img src="data:image/gif;base64,{{.Image}}" />
+   
+</a>
+<span class="label label-info">Автор {{.Author.Firstname}} {{.Author.Lastname}}</span>
+<div class="panel panel-default">
+  <div class="panel-body">
+    {{.Annotation}}
+  </div>
+</div>
+<a href ="/reading/{{.Title}}">Читать</a>
+</div>
+</div>
+</div>
+
+{{end}}
+{{define "scripts"}}
+   <script src="/static/highlight/highlight.pack.js"></script>
+   <script>hljs.initHighlightingOnLoad();</script>
+   <script type="text/javascript">
+   </script>
+{{end}}
