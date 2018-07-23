@@ -19,6 +19,7 @@ type Book struct {
 	Author     Person
 	Annotation template.HTML
 	Body       template.HTML
+	Image      string
 }
 
 func Load(md string) (Book, int, error) {
@@ -39,7 +40,8 @@ func Load(md string) (Book, int, error) {
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
 	body := tagR(file, "body")
-	book := Book{title, author, template.HTML(annotation), template.HTML(body)}
+	image := tagR(file, "binary")
+	book := Book{title, author, template.HTML(annotation), template.HTML(body), image}
 	return book, 200, nil
 
 }

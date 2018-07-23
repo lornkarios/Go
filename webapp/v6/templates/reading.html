@@ -6,22 +6,18 @@
 <div class="row" style="text-align:left;">
 <div class="col-md-8 col-md-offset-2">
 <h1>{{.Title}}</h1>
-<a href="#" class="thumbnail">
-      <binary id="{{.Title}}.jpg" content-type="image/jpeg">
-      	{{.Image}}
-      </binary>>
-</a>
-<span class="label label-info">Автор {{.Author.Firstname}} {{.Author.Lastname}}</span>
-<div class="panel panel-default">
-  <div class="panel-body">
-    {{.Annotation}}
-  </div>
-</div>
-<button type="button" class="btn btn-default">Left</button>
-</div>
-</div>
-</div>
 
+
+{{.Body}}
+</div>
+</div>
+</div>
+<nav aria-label="...">
+  <ul class="pager">
+    <li><a href="#">Предыдущая</a></li>
+    <li><a href="#">Следующая</a></li>
+  </ul>
+</nav>
 {{end}}
 {{define "scripts"}}
    <script src="/static/highlight/highlight.pack.js"></script>
