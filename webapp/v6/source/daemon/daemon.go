@@ -61,7 +61,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	// Например, posts/p1
 	p := path.Join("books", page)
 	var post_md string
-	var pbook int
+	var pbook int32
 	if page != "" {
 		// если page не пусто, то считаем, что запрашивается файл
 		// получим posts/p1.md
