@@ -3,6 +3,7 @@ package parser
 import (
 	"html/template"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 )
