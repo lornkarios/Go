@@ -2,13 +2,15 @@ package main
 
 import (
 	//"fmt"
-	"fmt"
 	"github.com/bmizerany/pat"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"html/template"
-	"io/ioutil"
+	"io"
+	//"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	//"os"
 	"path"
 	"strconv"
 	"strings"
@@ -26,6 +28,8 @@ var (
 	post_template  = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "book.html")))
 	read_template  = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "reading.html")))
 	error_template = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "error.html")))
+	books_template = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "library.html")))
+	add_template   = template.Must(template.ParseFiles(path.Join("templates", "index.html"), path.Join("templates", "add.html")))
 )
 
 func main() {
@@ -33,8 +37,13 @@ func main() {
 	fs := http.FileServer(http.Dir("./public/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	mux := pat.New()
+
 	mux.Get("/books/:page", http.HandlerFunc(PostHandler))
 	mux.Get("/books/:page/", http.HandlerFunc(PostHandler))
+	mux.Get("/", http.HandlerFunc(PostHandler))
+
+	mux.Get("/library/", http.HandlerFunc(BookHandler))
+	mux.Get("/library", http.HandlerFunc(BookHandler))
 
 	mux.Get("/reading/:page/:bPage", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/:page/", http.HandlerFunc(ReadHandler))
@@ -42,13 +51,16 @@ func main() {
 	mux.Get("/reading/", http.HandlerFunc(ReadHandler))
 	mux.Get("/reading/:page/:bPage/", http.HandlerFunc(ReadHandler))
 
-	mux.Get("/", http.HandlerFunc(PostHandler))
+	mux.Get("/add", http.HandlerFunc(AddHandler))
+	mux.Post("/add2", http.HandlerFunc(AddHandler))
+
 	http.Handle("/", mux)
 	log.Println("Listening...")
 	http.ListenAndServe(":3000", nil)
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
+
 	params := r.URL.Query()
 	// Извлекаем параметр
 	// Например, в http://127.0.0.1:3000/p1 page = "p1"
@@ -56,13 +68,8 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	page := params.Get(":page")
 	// Путь к файлу (без расширения)
 	// Например, posts/p1
-	p := path.Join("books", page)
-	var post_md string
-	if page != "" {
-		// если page не пусто, то считаем, что запрашивается файл
-		// получим posts/p1.md
-		post_md = p + ".fb2"
-	} else {
+
+	if page == "" {
 		// если page пусто, то выдаем главную
 		if err := first_template.ExecuteTemplate(w, "layout", nil); err != nil {
 			log.Println(err.Error())
@@ -75,7 +82,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	var status int
 	post = mainBook
 	if mainBook.Title == "" || mainBook.Title != page {
-		*post, status, err = Load(post_md, 0)
+		*post, status, err = Load(page, 0)
 		if err != nil {
 			errorHandler(w, r, status)
 			return
@@ -91,6 +98,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
+	//loadFromDb()
 	// Извлекаем параметр
 	// Например, в http://127.0.0.1:3000/p1 page = "p1"
 	// в http://127.0.0.1:3000/ page = ""
@@ -101,8 +109,6 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	// Путь к файлу (без расширения)
 	// Например, posts/p1
 
-	p := path.Join("books", page)
-	var post_md string
 	var pbook int64
 	if page != "" {
 		// если page не пусто, то считаем, что запрашивается файл
@@ -118,12 +124,15 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		post_md = p + ".fb2"
 		if bpage != "" {
 
 			pbook, _ = strconv.ParseInt(bpage, 10, 32)
 			if pbook < 0 {
 				http.Redirect(w, r, "/reading/"+page, http.StatusMovedPermanently)
+				return
+			}
+			if mainBook.Body1 != "" && len(mainBook.Body1)/4000 < int(pbook) {
+				http.Redirect(w, r, "/reading/"+page+"/"+strconv.Itoa(len(mainBook.Body1)/4000), http.StatusMovedPermanently)
 				return
 			}
 
@@ -132,10 +141,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// если page пусто, то выдаем главную
-		if err := first_template.ExecuteTemplate(w, "layout", nil); err != nil {
-			log.Println(err.Error())
-			errorHandler(w, r, 500)
-		}
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 		return
 	}
 	var post *Book
@@ -147,7 +153,7 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 	post = mainBook
 
 	if mainBook.Title == "" || mainBook.Title != page {
-		*post, status, err = Load(post_md, pbook)
+		*post, status, err = Load(page, pbook)
 
 		if err != nil {
 			errorHandler(w, r, status)
@@ -155,8 +161,59 @@ func ReadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		mainBook = post
 	}
-	post.Body = template.HTML(post.Body1[post.Bpage*4000 : (post.Bpage+1)*4000])
+	if int(post.Bpage) == len(mainBook.Body1)/4000 {
+		post.Body = template.HTML(post.Body1[post.Bpage*4000 : int(post.Bpage)*4000+len(post.Body1)%4000])
+
+	} else {
+
+		post.Body = template.HTML(post.Body1[post.Bpage*4000 : (post.Bpage+1)*4000])
+	}
 	if err := read_template.ExecuteTemplate(w, "layout", *post); err != nil {
+		log.Println(err.Error())
+		errorHandler(w, r, 500)
+	}
+}
+func BookHandler(w http.ResponseWriter, r *http.Request) {
+	titles := LoadFromDb()
+	var p struct {
+		Boddy template.HTML
+		Code  string
+		Title string
+	}
+	s := ""
+	for _, v := range titles {
+		s += "<a href=\"" + "/books/" + v + "\" class=\"list-group-item\">" + v + "</a>"
+	}
+	p.Boddy = template.HTML(s)
+	p.Code = "UTF-8"
+	p.Title = ""
+	if err := books_template.ExecuteTemplate(w, "layout", p); err != nil {
+		log.Println(err.Error())
+		errorHandler(w, r, 500)
+	}
+}
+
+func AddHandler(w http.ResponseWriter, r *http.Request) {
+	//fmt.Println("Add")
+
+	if r.URL.Path == "/add2" {
+		var file string
+		var err error
+		if file, err = openFB(w, r); err != nil {
+			log.Println(err.Error())
+			errorHandler(w, r, 500)
+		}
+		if err = Download(file); err != nil {
+			log.Println(err.Error())
+			errorHandler(w, r, 500)
+		}
+		http.Redirect(w, r, "/add", http.StatusMovedPermanently)
+		return
+
+	}
+	//http.PostForm("/add", data)
+	//resp, _ := http.PostForm("/add", url.Values{"login_login": {"Value"}, "login_password": {"123"}})
+	if err := add_template.ExecuteTemplate(w, "layout", nil); err != nil {
 		log.Println(err.Error())
 		errorHandler(w, r, 500)
 	}
@@ -187,20 +244,48 @@ type Book struct {
 	Body1      string
 }
 
+type BookDB struct {
+	Id          bson.ObjectId `bson:"_id"`
+	Title       string        `bson:"title"`
+	AuthorName  string        `bson:"authorName"`
+	AuthorLName string        `bson:"authorLName"`
+	Annotation  string        `bson:"annotation"`
+	Body        string        `bson:"body"`
+	Image       string        `bson:"image"`
+	Code        string        `bson:"code"`
+}
+
 func Load(md string, pNum int64) (Book, int, error) {
-	info, err := os.Stat(md)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// файл не существует
-			return Book{}, http.StatusNotFound, err
-		}
+	//info, err := os.Stat(md)
+	//if err != nil {
+	//	if os.IsNotExist(err) {
+	// файл не существует
+	//		return Book{}, http.StatusNotFound, err
+	//	}
+	//}
+
+	//if info.IsDir() {
+	// не файл, а папка
+	//	return Book{}, http.StatusNotFound, fmt.Errorf("dir")
+	//}
+
+	session, _ := mgo.Dial("mongodb://127.0.0.1")
+	mainDB := session.DB("library")
+	colBooks := mainDB.C("books")
+	query := bson.M{
+		"title": md,
 	}
-	if info.IsDir() {
-		// не файл, а папка
-		return Book{}, http.StatusNotFound, fmt.Errorf("dir")
-	}
-	fileread, _ := ioutil.ReadFile(md)
-	file := string(fileread)
+
+	library := []BookDB{}
+	colBooks.Find(query).All(&library)
+	author := Person{library[0].AuthorName, library[0].AuthorLName}
+
+	book := Book{library[0].Title, author, template.HTML(library[0].Annotation), template.HTML(library[0].Body), library[0].Image, library[0].Code, pNum, library[0].Body}
+	return book, 200, nil
+
+}
+
+func Download(file string) error {
 	title := tagR(file, "book-title")
 	author := Person{Firstname: tagR(tagR(file, "author"), "first-name"), Lastname: tagR(tagR(file, "author"), "last-name")}
 	annotation := tagR(file, "annotation")
@@ -208,8 +293,21 @@ func Load(md string, pNum int64) (Book, int, error) {
 	//body = body[pNum*4000 : (pNum+1)*4000]
 	image := tagR(file, "binary")
 	code := encode(file)
-	book := Book{title, author, template.HTML(annotation), template.HTML(body), image, code, pNum, body}
-	return book, 200, nil
+	book := &BookDB{bson.NewObjectId(), title, author.Firstname, author.Lastname, annotation, body, image, code}
+
+	session, err := mgo.Dial("mongodb://127.0.0.1")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	// получаем коллекцию
+	productCollection := session.DB("library").C("books")
+	err = productCollection.Insert(book)
+	if err != nil {
+		return err
+	}
+	return nil
 
 }
 
@@ -238,4 +336,42 @@ func encode(file string) string {
 	}
 
 	return (file[ind1+10 : ind2])
+}
+func openFB(w http.ResponseWriter, r *http.Request) (string, error) {
+
+	r.ParseMultipartForm(1024 * 1024 * 5)
+	file, handler, err := r.FormFile("my_file")
+	if err != nil {
+		log.Println(err.Error())
+		errorHandler(w, r, 500)
+		return "", err
+	}
+	p := make([]byte, 1024*1024*10)
+
+	defer file.Close()
+	handler.Open()
+	file.Seek(0, io.SeekStart)
+	//var n int
+	_, err = file.Read(p)
+	if err != nil {
+		log.Println(err.Error())
+		errorHandler(w, r, 500)
+		return "", err
+	}
+	file.Close()
+	return (string(p)), nil
+}
+func LoadFromDb() []string {
+	session, _ := mgo.Dial("mongodb://127.0.0.1")
+	mainDB := session.DB("library")
+	colBooks := mainDB.C("books")
+	query := bson.M{}
+	library := []BookDB{}
+	colBooks.Find(query).All(&library)
+	var titles []string
+	for _, p := range library {
+
+		titles = append(titles, p.Title)
+	}
+	return titles
 }

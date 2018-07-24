@@ -1,0 +1,27 @@
+{{define "head"}}
+   <link href="/static/highlight/styles/ir_black.css" rel="stylesheet" media="screen">
+{{end}}
+{{define "title"}}{{.Title}} Добавить книгу{{end}}{{define "body"}}
+<div class="container" id="container">
+<div class="row" style="text-align:left;">
+<div class="col-md-8 col-md-offset-2">
+<h1>Добавить новую книгу</h1>
+
+
+ <form  action="/add2" method="post" enctype="multipart/form-data" >
+ <input type="file" name="my_file">
+ 
+   <input type="submit" value="Отправить">
+  </form> 
+
+</div>
+</div>
+</div>
+
+{{end}}
+{{define "scripts"}}
+   <script src="/static/highlight/highlight.pack.js"></script>
+   <script>hljs.initHighlightingOnLoad();</script>
+   <script type="text/javascript">
+   </script>
+{{end}}
