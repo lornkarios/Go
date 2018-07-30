@@ -1,0 +1,50 @@
+{{define "head"}}
+{{end}}
+{{define "title"}}{{.Title}}{{end}}{{define "body"}}
+		<nav class="navbar navbar-default">
+			<ul class="nav navbar-nav">
+				<li ><a href="/">Основная</a></li>
+				<li ><a href="/about1/">О нас</a></li>
+				<li class="dropdown active">
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сервисы <span class="caret"></span></a>
+		          <ul class="dropdown-menu">
+		            <li class="active"><a href="/reading/{{.Title}}">Читать</a></li>
+		            <li><a href="/books/{{.Title}}">Описание</a></li>
+		            <li role="separator" class="divider"></li>
+		            <li><a href="/add">Добавить книгу</a></li>
+		             
+		          </ul>
+		        </li>
+				
+				<li><a href="/library">Все книги</a></li>
+			</ul>
+		</nav>
+		<div class="heading">
+			<h1>{{.Title}}</h1>
+		</div>
+		
+				<div class="jumbotron">
+					<blockquote>
+						
+						<div class="read">
+							{{.Body}}
+						</div>
+						
+					</blockquote>
+				</div>
+		
+			<nav aria-label="...">
+			  <ul class="pager">
+			  	<div class="row">
+				    <li class="col-md-8"><a target="_self" style ="color:#ffd595" href="/reading/{{.Title}}/{{.Bpage}}/pr">Предыдущая</a></li>   	<span class="col-md-8" style="background:#7d512d ">Страница {{.Bpage}}</span>
+				    <li class="col-md-8"><a target="_self" style ="color:#ffd595" href="/reading/{{.Title}}/{{.Bpage}}/sl">Следующая</a></li>
+				</div>
+			  </ul>
+			</nav>
+		
+	</div>
+	{{end}}
+{{define "scripts"}}
+	   <script type="text/javascript">
+   </script>
+{{end}}

@@ -1,0 +1,58 @@
+{{define "head"}}
+{{end}}
+{{define "title"}}{{.Title}}{{end}}{{define "body"}}
+		<nav class="navbar navbar-default">
+			<ul class="nav navbar-nav">
+				<li ><a href="/">Основная</a></li>
+				<li ><a href="/about1/">О нас</a></li>
+				<li class="dropdown active">
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сервисы <span class="caret"></span></a>
+		          <ul class="dropdown-menu">
+		            <li><a href="/reading/{{.Title}}">Читать</a></li>
+		            <li class="active"><a href="/books/{{.Title}}">Описание</a></li>
+		            <li role="separator" class="divider"></li>
+		            <li><a href="/add">Добавить книгу</a></li>
+		           
+		          </ul>
+		        </li>
+				
+				<li><a href="/library">Все книги</a></li>
+			</ul>
+		</nav>
+		<div class="heading">
+			<h1>{{.Title}}</h1>
+		</div>
+			<br>
+			<div class="row">
+			
+			<section class="col-md-8">
+
+				
+			<img src="/static/images/books/{{.Title}}.jpg" width=300 style="padding: 10px;" width=300 class="img-thumbnail"/>
+			
+			<span class="label" style="background:  #bb8b54; ">Автор {{.Author.Firstname}} {{.Author.Lastname}}</span>
+			</section>
+			<section class="col-md-16 ">
+				<div class="jumbotron">
+					<blockquote>
+						
+						<div class="anot" style="font: 100 italic 10px @brand-font2;">
+							 {{.Annotation}}
+						</div>
+						
+					</blockquote>
+				</div>
+			
+		</section>
+	</div>
+	<br>
+				
+		
+			
+		
+	</div>
+	{{end}}
+{{define "scripts"}}
+	   <script type="text/javascript">
+   </script>
+{{end}}

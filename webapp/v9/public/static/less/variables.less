@@ -1,0 +1,78 @@
+
+
+@brand-font:"Caveat", cursive;
+@brand-font2:"Marck Script", cursive;
+@brand-font3:"Ledger", serif;
+/*светло коричневый фон страницы*/
+@body-bg: #7d512d; 
+@body-bg2: #ffbf00; 
+/*специфический коричневый фон данного дизайна*/
+@brand-primary: #cea262; 
+/*фон панелей*/
+@panel-bg: #bb8b54;
+/*цвет рамки панелей*/
+@panel-inner-border: #7d512d;
+/*убираем скругление у блоков*/
+@border-radius-base: 5px;
+/*первичные кнопки имеют коричневый фон*/
+@btn-primary-bg: @brand-primary; 
+/*если ширина экрана больше 992px, то ширина контейнера 960px*/
+@container-md: 960px; 
+/*если ширина экрана больше 1200px, то ширина контейнера так же 960px*/
+@container-lg: @container-md; 
+/*основным шрифтом будет Tahoma*/
+@font-family-base: Tahoma, sans-serif;
+/*задаем базовый размер*/
+@font-size-base: 18px; 
+/*основной цвет текста на странице*/
+@text-color: #ffd595;
+/*серый фон текстовых полей*/
+@input-bg: @panel-bg;
+/*серая рамка текстовых полей*/
+@input-border: @panel-inner-border;
+/*серый цвет текста в полях*/
+@input-color:@text-color;
+@grid-columns: 24;
+
+@btn-default-color:@brand-primary; 
+@input-border-focus:#ddad75;
+
+/*высота навигационного меню*/
+@navbar-height: 37px;
+/*задаем  побольше горизонтальный отступ*/
+@nav-link-padding: 10px 25px;
+/*фон для пунктов меню*/
+@navbar-default-bg: @panel-bg;
+/*цвет текста в пунктах меню*/
+@navbar-default-link-color: @text-color;
+/*и при наведении мышки – такой же*/
+@navbar-default-link-hover-color: #fff;
+/*фон активного пункта меню – наш специфический голубой цвет*/
+@navbar-default-link-active-bg: @brand-primary;
+/*цвет текста активного пункта меню*/
+@navbar-default-link-active-color: #fff;
+
+@pager-hover-bg: #ddad75;
+@pager-bg:@panel-bg;
+
+@list-group-bg: @panel-bg;
+@list-group-border: @panel-inner-border;
+@list-group-hover-bg:#fff;
+
+
+@panel-primary-border: @panel-inner-border;
+
+@input-color-placeholder:@text-color;
+
+@input-border-radius-small:5px;
+@input-border-radius:7px;
+@input-border-radius-large:9px;
+@jumbotron-bg: @brand-primary;
+@jumbotron-color: #fff;
+
+@thumbnail-padding: 1px;
+@thumbnail-border: @panel-inner-border;
+
+@dropdown-bg:#ffd595;
+@dropdown-link-hover-color:#7d512d; 
+@dropdown-link-active-bg:@body-bg2;

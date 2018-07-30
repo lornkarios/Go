@@ -1,0 +1,61 @@
+{{define "head"}}
+{{end}}
+{{define "title"}}О библиотеке{{end}}{{define "body"}}
+<nav class="navbar navbar-default">
+			<ul class="nav navbar-nav">
+				<li ><a href="/">Основная</a></li>
+				<li class="active"><a href="/about1/">О нас</a></li>
+				<li class="dropdown">
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сервисы <span class="caret"></span></a>
+		          <ul class="dropdown-menu">
+
+		            <li><a href="/add">Добавить книгу</a></li>
+		             
+		          </ul>
+		        </li>
+				<li><a href="/library">Все книги</a></li>
+				
+			</ul>
+		</nav>
+<div class="heading">
+			<h1>О нас</h1>
+		</div>
+		<div class="row">
+			<aside class="col-md-7">
+				<ul class="list-group submenu">
+					<li class="list-group-item"><a href="/about1/">О библиотеке</a></li>
+					<li class="list-group-item active">Цели</li>
+					<li class="list-group-item"><a href="/about3/">Разработка</a></li>
+					<li class="list-group-item"><a href="/about4/">Работа с сайтом</a></li>
+				</ul>
+				
+			</aside>
+			<section class="col-md-offset-2 col-md-15">
+				
+				<li style = "color:#7d512d; ">
+				<p>
+					Основная цель создания этого сайта - возможность обмена и чтения литературы, находящейся в свободном доступе.
+				</p>
+			</li>
+				<li style = "color:#7d512d; ">
+				<p>
+					Также одной из целей является продемонстрировать возможности языка Go с подключением к Mongo DB.
+				</p>
+			</li>
+				<li style = "color:#7d512d; ">
+				<p>
+					Все книги, а также пользователи хранятся в базе данных под управлением Mongo.
+				</p>
+				</li>
+			<br>
+			<br>
+			<br>
+				
+			</section>
+		</div>
+	</div>
+	{{end}}
+{{define "scripts"}}
+	   <script type="text/javascript">
+   </script>
+{{end}}
